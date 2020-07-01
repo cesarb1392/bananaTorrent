@@ -28,7 +28,7 @@ services:
       - PGID=1001
       - TZ=Europe/Amstedam
     volumes:
-      - ./config:/config
+      - ./config/jackett:/config
     depends_on:
       - transmission
     ports:
