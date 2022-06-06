@@ -1,28 +1,38 @@
+locals {
+  enable_jackett      = true
+  enable_transmission = true
+}
+
+
 resource "docker_container" "transmission" {
+  count = local.enable_transmission == true ? 1 : 0
+
   name = "transmission"
 
-  image   = docker_image.transmission_vpn.latest
+  image   = docker_image.linuxserver_transmission.latest
   restart = "always"
-  capabilities {
-    add = ["NET_ADMIN"]
-  }
 
   env = [
-    "OPENVPN_PROVIDER=${var.OPENVPN_PROVIDER}",
-    "OPENVPN_CONFIG=${var.OPENVPN_CONFIG}",
-    "OPENVPN_USERNAME=${var.OPENVPN_USERNAME}",
-    "OPENVPN_PASSWORD=${var.OPENVPN_PASSWORD}",
-    "LOCAL_NETWORK=${var.NETWORK_CIDR}",
+    "PUID=${var.PUID}",
+    "PGID=${var.PGID}",
+    "TZ=${var.TIMEZONE}",
+    "AUTO_UPDATE=true",
   ]
 
-  ports {
-    internal = 9091
-    external = 9091
-  }
+  network_mode = "container:${docker_container.bubuntux_nordlynx.name}"
+  depends_on   = [docker_container.bubuntux_nordlynx]
 
   volumes {
-    host_path      = "${var.HOST_PATH}/transmission"
-    container_path = "/data"
+    host_path      = "${var.HOST_PATH}/config/transmission"
+    container_path = "/config"
+  }
+  volumes {
+    host_path      = "${var.HOST_PATH}/downloads"
+    container_path = "/downloads"
+  }
+  volumes {
+    host_path      = "${var.HOST_PATH}/downloads/watch"
+    container_path = "/watch"
   }
 
   log_driver = "json-file"
@@ -31,10 +41,11 @@ resource "docker_container" "transmission" {
     max-file = "3"
   }
 
-  depends_on = [docker_image.transmission_vpn]
 }
 
 resource "docker_container" "jackett" {
+  count = local.enable_jackett == true ? 1 : 0
+
   name = "jackett"
 
   image   = docker_image.linuxserver_jackett.latest
@@ -47,18 +58,51 @@ resource "docker_container" "jackett" {
   ]
 
   volumes {
-    host_path      = "${var.HOST_PATH}/downloads"
+    host_path      = "${var.HOST_PATH}/downloads/watch"
     container_path = "/downloads"
   }
   volumes {
-    host_path      = "${var.HOST_PATH}/config"
+    host_path      = "${var.HOST_PATH}/config/jackett"
     container_path = "/config"
+  }
+
+  network_mode = "container:${docker_container.bubuntux_nordlynx.name}"
+  depends_on   = [docker_container.bubuntux_nordlynx]
+}
+
+resource "docker_container" "bubuntux_nordlynx" {
+  name = "nordvpn"
+
+  image        = docker_image.bubuntux_nordlynx.latest
+  restart      = "always"
+  network_mode = "bridge"
+  capabilities {
+    add = ["NET_ADMIN", "NET_RAW", "SYS_MODULE"]
+  }
+
+  env = [
+    "PRIVATE_KEY=${var.NORDVPN_PRIVATE_KEY}",
+    "NET_LOCAL=${var.NETWORK_CIDR}",
+    "TZ=${var.TIMEZONE}",
+    "ALLOWED_IPS=0.0.0.0/0",
+    "DNS=208.67.222.222,1.1.1.1",
+    "END_POINT=${local.json_data[0].hostname}:51820",
+    "PUBLIC_KEY=${local.json_data[0].technologies[5].metadata[0].value}"
+  ]
+
+  sysctls = {
+    "net.ipv6.conf.all.disable_ipv6"   = 1
+    "net.ipv4.conf.all.src_valid_mark" = 1
+  }
+
+  ports {
+    internal = 9091
+    external = 8080
   }
 
   ports {
     internal = 9117
-    external = 9117
+    external = 8081
   }
 
-  depends_on = [docker_image.linuxserver_jackett]
 }

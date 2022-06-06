@@ -1,19 +1,3 @@
-variable "OPENVPN_PROVIDER" {
-  type    = string
-  default = "NORDVPN"
-}
-
-variable "OPENVPN_CONFIG" {
-  type = string
-}
-
-variable "OPENVPN_USERNAME" {
-  type = string
-}
-
-variable "OPENVPN_PASSWORD" {
-  type = string
-}
 
 variable "NETWORK_CIDR" {
   type = string
@@ -32,5 +16,9 @@ variable "PGID" {
 }
 
 variable "TIMEZONE" {
+  type = string
+}
+
+variable "NORDVPN_PRIVATE_KEY" {
   type = string
 }
