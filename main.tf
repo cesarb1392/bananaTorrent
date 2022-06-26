@@ -1,16 +1,17 @@
 locals {
   enable_jackett      = true
   enable_transmission = true
+  enable_sonarr       = true
+  enable_radarr       = true
 }
 
-
 resource "docker_container" "transmission" {
-  count = local.enable_transmission == true ? 1 : 0
+  count = local.enable_transmission ? 1 : 0
 
   name = "transmission"
 
   image   = docker_image.linuxserver_transmission.latest
-  restart = "always"
+  restart = "on-failure"
 
   env = [
     "PUID=${var.PUID}",
@@ -18,9 +19,6 @@ resource "docker_container" "transmission" {
     "TZ=${var.TIMEZONE}",
     "AUTO_UPDATE=true",
   ]
-
-  network_mode = "container:${docker_container.bubuntux_nordlynx.name}"
-  depends_on   = [docker_container.bubuntux_nordlynx]
 
   volumes {
     host_path      = "${var.HOST_PATH}/config/transmission"
@@ -41,15 +39,18 @@ resource "docker_container" "transmission" {
     max-file = "3"
   }
 
+  network_mode = "container:${docker_container.bubuntux_nordlynx.0.name}"
+  depends_on   = [docker_container.bubuntux_nordlynx]
+
 }
 
 resource "docker_container" "jackett" {
-  count = local.enable_jackett == true ? 1 : 0
+  count = local.enable_jackett ? 1 : 0
 
   name = "jackett"
 
   image   = docker_image.linuxserver_jackett.latest
-  restart = "always"
+  restart = "on-failure"
   env = [
     "PUID=${var.PUID}",
     "PGID=${var.PGID}",
@@ -58,51 +59,72 @@ resource "docker_container" "jackett" {
   ]
 
   volumes {
-    host_path      = "${var.HOST_PATH}/downloads/watch"
+    host_path      = "${var.HOST_PATH}/downloads/incomplete"
     container_path = "/downloads"
   }
   volumes {
     host_path      = "${var.HOST_PATH}/config/jackett"
     container_path = "/config"
   }
+  volumes {
+    host_path      = "${var.HOST_PATH}/config/Jackett/Indexers"
+    container_path = "/config/Jackett/Indexers"
+  }
 
-  network_mode = "container:${docker_container.bubuntux_nordlynx.name}"
+  network_mode = "container:${docker_container.bubuntux_nordlynx.0.name}"
   depends_on   = [docker_container.bubuntux_nordlynx]
 }
 
-resource "docker_container" "bubuntux_nordlynx" {
-  name = "nordvpn"
+resource "docker_container" "sonarr" {
+  count = local.enable_sonarr ? 1 : 0
 
-  image        = docker_image.bubuntux_nordlynx.latest
-  restart      = "always"
-  network_mode = "bridge"
-  capabilities {
-    add = ["NET_ADMIN", "NET_RAW", "SYS_MODULE"]
-  }
+  name = "sonarr"
 
+  image   = docker_image.linuxserver_sonarr.latest
+  restart = "on-failure"
   env = [
-    "PRIVATE_KEY=${var.NORDVPN_PRIVATE_KEY}",
-    "NET_LOCAL=${var.NETWORK_CIDR}",
+    "PUID=${var.PUID}",
+    "PGID=${var.PGID}",
     "TZ=${var.TIMEZONE}",
-    "ALLOWED_IPS=0.0.0.0/0",
-    "DNS=208.67.222.222,1.1.1.1",
-    "END_POINT=${local.json_data[0].hostname}:51820",
-    "PUBLIC_KEY=${local.json_data[0].technologies[5].metadata[0].value}"
   ]
 
-  sysctls = {
-    "net.ipv6.conf.all.disable_ipv6"   = 1
-    "net.ipv4.conf.all.src_valid_mark" = 1
+  volumes {
+    host_path      = "${var.HOST_PATH}/config/sonarr"
+    container_path = "/config"
   }
 
-  ports {
-    internal = 9091
-    external = 8080
+  volumes {
+    host_path      = "${var.HOST_PATH}/downloads/incomplete"
+    container_path = "/downloads"
   }
 
-  ports {
-    internal = 9117
-    external = 8081
+  network_mode = "container:${docker_container.bubuntux_nordlynx.0.name}"
+  depends_on   = [docker_container.bubuntux_nordlynx]
+}
+
+resource "docker_container" "radarr" {
+  count = local.enable_radarr ? 1 : 0
+
+  name = "radarr"
+
+  image   = docker_image.linuxserver_radarr.latest
+  restart = "on-failure"
+  env = [
+    "PUID=${var.PUID}",
+    "PGID=${var.PGID}",
+    "TZ=${var.TIMEZONE}",
+  ]
+
+  volumes {
+    host_path      = "${var.HOST_PATH}/config/radarr"
+    container_path = "/config"
   }
 
+  volumes {
+    host_path      = "${var.HOST_PATH}/downloads/incomplete"
+    container_path = "/downloads"
+  }
+
+  network_mode = "container:${docker_container.bubuntux_nordlynx.0.name}"
+  depends_on   = [docker_container.bubuntux_nordlynx]
 }

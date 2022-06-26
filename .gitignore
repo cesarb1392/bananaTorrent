@@ -121,5 +121,4 @@ terraform.rc
 
 # Project
 downloads/
-jackett/
-transmission/
+config/

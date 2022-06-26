@@ -14,7 +14,7 @@ terraform {
 locals {
   is_local = true
 
-  docker_host = local.is_local == true ? "unix:///var/run/docker.sock" : "ssh://astorgaBanana"
+  docker_host = local.is_local == true ? "unix:///var/run/docker.sock" : "ssh://${var.ssh_profile}"
   ssh_opts    = local.is_local == false ? ["-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null"] : []
 }
 
