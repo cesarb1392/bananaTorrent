@@ -1,6 +1,6 @@
 locals {
-  enable_jackett      = false
-  enable_transmission = false
+  enable_jackett      = true
+  enable_transmission = true
   enable_sonarr       = false
   enable_radarr       = false
   enable_prowlarr     = false
@@ -60,7 +60,7 @@ resource "docker_container" "jackett" {
   ]
 
   volumes {
-    host_path      = "${var.DOWNLOADS_PATH}/downloads/incomplete"
+    host_path      = "${var.DOWNLOADS_PATH}/incomplete"
     container_path = "/downloads"
   }
   volumes {
