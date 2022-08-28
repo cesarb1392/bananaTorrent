@@ -17,3 +17,6 @@ resource "docker_image" "linuxserver_sonarr" {
 resource "docker_image" "linuxserver_radarr" {
   name = "lscr.io/linuxserver/radarr"
 }
+resource "docker_image" "linuxserver_prowlarr" {
+  name = "lscr.io/linuxserver/prowlarr:develop"
+}

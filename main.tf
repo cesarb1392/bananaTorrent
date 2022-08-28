@@ -1,8 +1,9 @@
 locals {
-  enable_jackett      = true
-  enable_transmission = true
-  enable_sonarr       = true
-  enable_radarr       = true
+  enable_jackett      = false
+  enable_transmission = false
+  enable_sonarr       = false
+  enable_radarr       = false
+  enable_prowlarr     = false
 }
 
 resource "docker_container" "transmission" {
@@ -21,15 +22,15 @@ resource "docker_container" "transmission" {
   ]
 
   volumes {
-    host_path      = "${var.HOST_PATH}/config/transmission"
+    host_path      = "${var.CONFIG_PATH}/transmission"
     container_path = "/config"
   }
   volumes {
-    host_path      = "${var.HOST_PATH}/downloads"
+    host_path      = var.DOWNLOADS_PATH
     container_path = "/downloads"
   }
   volumes {
-    host_path      = "${var.HOST_PATH}/downloads/watch"
+    host_path      = "${var.DOWNLOADS_PATH}/watch"
     container_path = "/watch"
   }
 
@@ -59,15 +60,15 @@ resource "docker_container" "jackett" {
   ]
 
   volumes {
-    host_path      = "${var.HOST_PATH}/downloads/incomplete"
+    host_path      = "${var.DOWNLOADS_PATH}/downloads/incomplete"
     container_path = "/downloads"
   }
   volumes {
-    host_path      = "${var.HOST_PATH}/config/jackett"
+    host_path      = "${var.CONFIG_PATH}/jackett"
     container_path = "/config"
   }
   volumes {
-    host_path      = "${var.HOST_PATH}/config/Jackett/Indexers"
+    host_path      = "${var.CONFIG_PATH}/Jackett/Indexers"
     container_path = "/config/Jackett/Indexers"
   }
 
@@ -89,12 +90,12 @@ resource "docker_container" "sonarr" {
   ]
 
   volumes {
-    host_path      = "${var.HOST_PATH}/config/sonarr"
+    host_path      = "${var.CONFIG_PATH}/sonarr"
     container_path = "/config"
   }
 
   volumes {
-    host_path      = "${var.HOST_PATH}/downloads/incomplete"
+    host_path      = "${var.DOWNLOADS_PATH}/incomplete"
     container_path = "/downloads"
   }
 
@@ -116,13 +117,36 @@ resource "docker_container" "radarr" {
   ]
 
   volumes {
-    host_path      = "${var.HOST_PATH}/config/radarr"
+    host_path      = "${var.CONFIG_PATH}/radarr"
     container_path = "/config"
   }
 
   volumes {
-    host_path      = "${var.HOST_PATH}/downloads/incomplete"
+    host_path      = "${var.DOWNLOADS_PATH}/incomplete"
     container_path = "/downloads"
+  }
+
+  network_mode = "container:${docker_container.bubuntux_nordlynx.0.name}"
+  depends_on   = [docker_container.bubuntux_nordlynx]
+}
+
+
+resource "docker_container" "prowlarr" {
+  count = local.enable_prowlarr ? 1 : 0
+
+  name = "prowlarr"
+
+  image   = docker_image.linuxserver_prowlarr.latest
+  restart = "on-failure"
+  env = [
+    "PUID=${var.PUID}",
+    "PGID=${var.PGID}",
+    "TZ=${var.TIMEZONE}",
+  ]
+
+  volumes {
+    host_path      = "${var.CONFIG_PATH}/prowlarr"
+    container_path = "/config"
   }
 
   network_mode = "container:${docker_container.bubuntux_nordlynx.0.name}"

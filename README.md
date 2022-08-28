@@ -1,25 +1,9 @@
 # Banana - Torrent(e)
 
-The name says it all.. this is an automated torrent client that runs within a wireguard vpn (Nordvpn)
-
-> how to get your `NORDVPN_PRIVATE_KEY`?
-```shell
-    docker run --rm --cap-add=NET_ADMIN -e USER=XXX -e PASS=YYY bubuntux/nordvpn:get_private_key
-```
-
-> How to add all indexers at once (sonarr + radarr) ?
->  # http://localhost:9117>/torznab/all/api?t=caps&apikey=<jackett api key>
-
-> How to check
->
-```shell
- docker exec -it transmission curl ifconfig.me -vv
- 
- docker exec -it nordvpn curl icanhazip.com -vv
-```
+The name says it all.. this is an automated torrent client that runs behind a wireguard vpn
 
 <!-- BEGIN_TF_DOCS -->
- ## Requirements
+## Requirements
 
 | Name | Version |
 |------|---------|
@@ -43,11 +27,13 @@ No modules.
 |------|------|
 | [docker_container.bubuntux_nordlynx](https://registry.terraform.io/providers/kreuzwerker/docker/2.16.0/docs/resources/container) | resource |
 | [docker_container.jackett](https://registry.terraform.io/providers/kreuzwerker/docker/2.16.0/docs/resources/container) | resource |
+| [docker_container.prowlarr](https://registry.terraform.io/providers/kreuzwerker/docker/2.16.0/docs/resources/container) | resource |
 | [docker_container.radarr](https://registry.terraform.io/providers/kreuzwerker/docker/2.16.0/docs/resources/container) | resource |
 | [docker_container.sonarr](https://registry.terraform.io/providers/kreuzwerker/docker/2.16.0/docs/resources/container) | resource |
 | [docker_container.transmission](https://registry.terraform.io/providers/kreuzwerker/docker/2.16.0/docs/resources/container) | resource |
 | [docker_image.bubuntux_nordlynx](https://registry.terraform.io/providers/kreuzwerker/docker/2.16.0/docs/resources/image) | resource |
 | [docker_image.linuxserver_jackett](https://registry.terraform.io/providers/kreuzwerker/docker/2.16.0/docs/resources/image) | resource |
+| [docker_image.linuxserver_prowlarr](https://registry.terraform.io/providers/kreuzwerker/docker/2.16.0/docs/resources/image) | resource |
 | [docker_image.linuxserver_radarr](https://registry.terraform.io/providers/kreuzwerker/docker/2.16.0/docs/resources/image) | resource |
 | [docker_image.linuxserver_sonarr](https://registry.terraform.io/providers/kreuzwerker/docker/2.16.0/docs/resources/image) | resource |
 | [docker_image.linuxserver_transmission](https://registry.terraform.io/providers/kreuzwerker/docker/2.16.0/docs/resources/image) | resource |
@@ -58,7 +44,8 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| HOST\_PATH | n/a | `string` | n/a | yes |
+| CONFIG\_PATH | n/a | `string` | n/a | yes |
+| DOWNLOADS\_PATH | n/a | `string` | n/a | yes |
 | NETWORK\_CIDR | n/a | `string` | n/a | yes |
 | NORDVPN\_PRIVATE\_KEY | n/a | `string` | n/a | yes |
 | PGID | n/a | `number` | n/a | yes |
@@ -71,5 +58,5 @@ No modules.
 
 | Name | Description |
 |------|-------------|
-| vpc\_server\_hostname | n/a |        
+| vpc\_server\_hostname | n/a |
 <!-- END_TF_DOCS -->

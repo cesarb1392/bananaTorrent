@@ -65,4 +65,9 @@ resource "docker_container" "bubuntux_nordlynx" {
     external = 8083
   }
 
+  ports {
+    internal = 9696
+    external = 8084
+  }
+
 }

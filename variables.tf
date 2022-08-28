@@ -2,7 +2,11 @@ variable "NETWORK_CIDR" {
   type = string
 }
 
-variable "HOST_PATH" {
+variable "CONFIG_PATH" {
+  type = string
+}
+
+variable "DOWNLOADS_PATH" {
   type = string
 }
 
