@@ -20,3 +20,7 @@ resource "docker_image" "linuxserver_radarr" {
 resource "docker_image" "linuxserver_prowlarr" {
   name = "lscr.io/linuxserver/prowlarr:develop"
 }
+
+resource "docker_image" "move_downloads" {
+  name = "alpine"
+}

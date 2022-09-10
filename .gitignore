@@ -122,4 +122,4 @@ terraform.rc
 # Project
 downloads/
 config/
-Indexers.zip
+move_downloads.sh

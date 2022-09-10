@@ -1,8 +1,8 @@
 locals {
   enable_jackett      = true
   enable_transmission = true
-  enable_sonarr       = false
-  enable_radarr       = false
+  enable_sonarr       = true
+  enable_radarr       = true
   enable_prowlarr     = false
 }
 
@@ -28,10 +28,6 @@ resource "docker_container" "transmission" {
   volumes {
     host_path      = var.DOWNLOADS_PATH
     container_path = "/downloads"
-  }
-  volumes {
-    host_path      = "${var.DOWNLOADS_PATH}/watch"
-    container_path = "/watch"
   }
 
   log_driver = "json-file"
@@ -130,13 +126,12 @@ resource "docker_container" "radarr" {
   depends_on   = [docker_container.bubuntux_nordlynx]
 }
 
-
 resource "docker_container" "prowlarr" {
   count = local.enable_prowlarr ? 1 : 0
 
   name = "prowlarr"
 
-  image   = docker_image.linuxserver_prowlarr.latest
+  image   = docker_image.linuxserver_prowlarr
   restart = "on-failure"
   env = [
     "PUID=${var.PUID}",
